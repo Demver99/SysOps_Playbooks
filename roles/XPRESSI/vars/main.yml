@@ -1,0 +1,10 @@
+---
+# vars file for XPRESSI
+
+# Servicios XPRESSI:
+xpressi: ["Xpressi Server","SmartPrep"]
+
+
+# Ruta de directorios temporales de licencias
+ruta_lic: D:\PersoProduction\Production Files\CLIENTS
+

@@ -1,0 +1,34 @@
+---
+# vars file for TRANSACTOR
+
+# Variables de conexion para los hosts de transactor
+
+ansible_user: slu004
+ansible_password: bAtR+vu$RAcre!
+ansible_psrp_port: 5985
+ansible_psrp_protocol: http
+ansible_connection: psrp
+ansible_psrp_auth: ntlm
+ansible_psrp_cert_validation: ignore
+
+
+# TRANSACTOR
+servicios: ["SnaBase","SnaServr","MQ_SNALUA_AGENT"]
+
+#----------------------------------------------------------------
+
+#ansible_user:  Administrador
+#ansible_password: valverde123%
+#ansible_connection: winrm
+#ansible_winrm_transport: basic
+#ansible_winrm_server_cert_validation: ignore
+
+
+# Win_2012R2
+#servicios: ["WalletService","Themes","UsoSvc"]
+#servicio_txsrv: "wuauserv"
+
+#servicio_SNA_BASE: WalltetService
+#servicio_SNA_SERVER: Themes
+#servicio_MQ: UsoSvc
+#servicio_txsrv: wuau

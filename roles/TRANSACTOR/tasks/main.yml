@@ -1,0 +1,86 @@
+---
+# tasks file for TRANSACTOR
+
+- name: Validar los servicios de TRANSACTOR para el servidor "
+  win_shell: |
+    $v = Get-Service | Where-Object {($_.Name -eq "{{ servicios[0] }}") -or ($_.Name -eq "{{ servicios[1] }}") -or ($_.Name -eq "{{ servicios[2] }}") -or ($_.DisplayName -like "txsrv*")} | Select -Property DisplayName,Status
+      
+      for ( $i=0; $i -lt $v.Length; $i++ ){
+           echo "El servicio *** $($v[$i].DisplayName) ***  se encuentra en $($v[$i].Status)"
+      }  
+    
+  register: result_status
+
+- block: 
+   - name: Imprimir mensaje de validacion correcta
+     debug:
+       msg:
+         - " ¡¡ LOS SERVICIOS SE ENCUENTRAN EN RUNNING !! "
+         - "{{ result_status.stdout_lines }}"
+         - " "
+         - " "
+         - " Favor de validar que las LUs del servidor se encuentren activas ."
+         - " De no encontrarse activas las LUs coordinar con INFRAESTRUCTURA WINDOWS para su revision con MAINFRAME ."
+     
+   - fail:
+       msg: " "
+
+  when: "'Stopped' not in result_status.stdout"
+
+
+- block:
+   - name: Validar los servicios detenidos
+     win_shell: |
+        $v = Get-Service | Where-Object {($_.Name -eq "{{ servicios[0] }}") -or ($_.Name -eq "{{ servicios[1] }}") -or ($_.Name -eq "{{ servicios[2] }}") -or ($_.DisplayName -like "txsrv*")} | Select -Property DisplayName,Status  
+      
+         for ( $i=0; $i -lt $v.Length; $i++ ){
+            if ( "$($v[$i].Status)" -eq "Stopped" ){
+              echo "El servicio *** $($v[$i].DisplayName) *** se encuentra en $($v[$i].Status)"
+            }
+         }      
+     register: result_stop
+  
+
+   - name: Imprimir los servicios detenidos
+     debug:
+       msg:
+        - " Se valida que lo siguientes servicios se encuentran en STOPPED :"
+        - "{{ result_stop.stdout_lines }}"
+ 
+
+   - name: Activar servicios DETENIDOS
+     win_service: 
+        name: "{{ item }}"
+        state: started
+     loop: "{{ servicios }}" 
+     register: result_start
+     when: ((result_stop.stdout_lines | length  = 1) and ("txsrv" not in result_stop.stdout)) Or (result_stop.stdout_lines | length  > 1) 
+   
+
+   - name: Validar los servicios
+     win_shell: |
+         $v = Get-Service | Where-Object {($_.Name -eq "{{ servicios[0] }}") -or ($_.Name -eq "{{ servicios[1] }}") -or ($_.Name -eq "{{ servicios[2] }}") -or ($_.DisplayName -like "txsrv*")} | Select -Property DisplayName,Status
+         
+          for ( $i=0; $i -lt $v.Length; $i++ ){
+             if ( "$($v[$i].Status)" -eq "Stopped" ){
+               echo "El servicio *** $($v[$i].DisplayName) *** se encuentra en $($v[$i].Status) ."
+             }else{
+               echo "El servicio *** $($v[$i].DisplayName) *** se encuentra en $($v[$i].Status) ."
+             }
+          }
+     register: result_status2
+  
+
+   - name: Imprimir estatus final de los servicios 
+     debug:
+       msg: 
+        - " ¡¡ INFORMACION FINAL DE LOS SERVICIOS !!"
+        - " Estatus final de los servicios transactor : "
+        - "{{ result_status2.stdout_lines }}"
+        - " "
+        - " -------------- "
+        - " ***  NOTA  *** "
+        - " -------------- "
+        - " Si todos los servicios se encuentran en RUNNING . Favor de mandar a validar ."
+        - " Si existe algun servicio en STOPPED . Favor de informar al analista ."
+  when: "'Stopped' in result_status.stdout"   

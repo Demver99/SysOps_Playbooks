@@ -1,0 +1,61 @@
+---
+# tasks file for TRANSACTOR
+
+- name: Validar los servicios de TRANSACTOR para el server "{{ SERVER_TRANSACTOR }}"
+  win_shell: |
+    $v = Get-Service | Where-Object {($_.Name -eq "{{ servicios[0] }}") -or ($_.Name -eq "{{ servicios[1] }}") -or ($_.Name -eq "{{ servicios[2] }}") -or ($_.Name -eq "{{ servicios[3] }}")} | Select -Property DisplayName,Status
+      
+      for ( $i=0; $i -lt $v.Length; $i++ ){
+           echo "El servicio $($v[$i].DisplayName) se encuentra en $($v[$i].Status)"
+      }  
+    
+  register: result_status
+
+- block: 
+   - name: Imprimir mensaje de validacion correcta
+     debug:
+       msg:
+         - " ¡¡ LOS SERVICIOS SE ENCUENTRAN EN RUNNING !! "
+         - "{{ result_status.stdout_lines }}"
+         - " "
+         - " "
+         - " Favor de validar que las LUs del servidor {{ SERVER_TRANSACTOR }} se encuentren activas ."
+         - " De no encontrarse activas las LUs coordinar con INFRAESTRUCTURA WINDOWS para su revision con MAINFRAME ."
+     
+   - fail:
+       msg: " "
+
+  when: "'Stopped' not in result_status.stdout"
+
+
+- name: Validar servicio MQ_SNALAU_AGENT
+  win_shell: |
+    $v = Get-Service | Where-Object {$_.Name -eq "{{ servicios[0] }}"} | Select -Property DisplayName,Status  
+      echo "El servicio $($v[0].DisplayName) se encuentra en $($v[0].Status)"        
+  register: result_status2
+
+- block:
+   - name: Imprimir status del servicio MQ_SNALAU_AGENT
+     debug:
+       msg:
+        - " Status del servicio MQ_SNALAU_AGENT :"
+        - "{{ result_status2.stdout_lines }}"
+
+ 
+- block:   
+   - name: Activar servicio MQ_SNALAU_AGENT
+     win_shell: |
+       Get-Service | Where-Object {$_.Name -eq "{{ servicios[0] }}"} | Start-Service
+     register: result_start
+
+   - name: Imprimir status del servicio MQ_SNALAU_AGENT
+     debug:
+       msg:
+        - " ¡¡ CORRECTO  !!"
+        - " Se activo correctamente el servicio {{ servicios[0] }} . Se valida que el status se encuentra  en RUNNING"
+        - " Se culmino con el workaround. Favor de mandar a validar ."
+     when: result_start.changed
+  
+  when: "'Stopped' in result_status2.stdout"
+         
+   

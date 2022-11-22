@@ -1,0 +1,15 @@
+---
+- name: Role ensures that the socks tunnel is setup
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - ansible-role-socks5-tunnel-nopassphrase
+
+
+- name: WorkAround Transactor Anexo 1 y 2
+  hosts: all
+  gather_facts: false
+  roles:
+    - { role: TRANSACTOR }
+  

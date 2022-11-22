@@ -1,0 +1,11 @@
+---
+# vars file for WBC
+
+# Applications Pools de WBC o SBC
+
+
+#PRD: s129vp
+app_pools: ["SbcApplPool","SbcUltWsAppPool","WbcAppPool","WbcUltWsAppPool"]
+
+#UAT: s129va1
+#app_pools: ["SbcAppPool","sbcWsAppPool","WbcAppPool","WbcUltWsAppPool"]
