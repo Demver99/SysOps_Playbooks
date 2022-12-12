@@ -7,7 +7,7 @@
     - ansible-role-socks5-tunnel-nopassphrase
     
 - name: WorkAround - WBC
-  hosts: "{{ SERVER_WBC }}"
+  hosts: all
   gather_facts: false
   roles:
    - { role: WBC }
