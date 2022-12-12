@@ -1,6 +1,6 @@
 ---
 - name: WorkAround WIO
-  hosts: "{{ SERVER_WIO }}"
+  hosts: all
   gather_facts: false
   roles:
     - { role: WIO }
