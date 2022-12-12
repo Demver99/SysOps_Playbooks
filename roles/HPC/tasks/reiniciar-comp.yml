@@ -1,5 +1,3 @@
-
-
 ---
 # tasks file for HPC
 
@@ -9,7 +7,7 @@
        $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
        $apps = $comAdmin.GetCollection("Applications")
        $apps.Populate();
-       $apps_wbc = $apps | Where-Object {($_.Name -eq "COM+ QC Dead Letter Queue Listener")}
+       $apps_wbc = $apps | Where-Object {($_.Name -eq "hpcData") -or ($_.Name -eq "hpcEntity") -or ($_.Name -eq "hpcLogic")}
        $apps_wbc
      register: comp_hpc
 
@@ -24,13 +22,17 @@
 - block:
    - name: Detener Components Service (COM+) de HPC
      win_shell: |
-       $hpc1 = "COM+ QC Dead Letter Queue Listener"
+       $hpc1 = "hpcData"
+       $hpc2 = "hpcEntity"
+       $hpc3 = "hpcLogic"
  
        $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
        $apps = $comAdmin.GetCollection("Applications")
        $apps.Populate();
 
        $comAdmin.ShutdownApplication($hpc1)
+       $comAdmin.ShutdownApplication($hpc2)
+       $comAdmin.ShutdownApplication($hpc3)
 
      register: stop_com
     
@@ -62,13 +64,17 @@
 - block:
    - name: Iniciar Components Services (COM+) de HPC
      win_shell: |
-       $hpc1 = "COM+ QC Dead Letter Queue Listener"
+       $hpc1 = "hpcData"
+       $hpc2 = "hpcEntity"
+       $hpc3 = "hpcLogic"
     
        $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
        $apps = $comAdmin.GetCollection("Applications")
        $apps.Populate();
 
        $comAdmin.StartApplication($hpc1)
+       $comAdmin.StartApplication($hpc2)
+       $comAdmin.StartApplication($hpc3)
   
      register: start_com
 

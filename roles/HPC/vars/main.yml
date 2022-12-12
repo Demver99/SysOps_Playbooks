@@ -5,7 +5,8 @@
 #hpc_comp: ["hpcData","hpcEntity","hpcLogic"]
 
 # IIS HPC
-#hpc_iis: hpcAppPool
+hpc_iis: hpcAppPool
 
-hpc_comp: COM+ QC Dead Letter Queue Listener
-hpc_iis: WbcAppPool
+
+#hpc_comp: COM+ QC Dead Letter Queue Listener
+#hpc_iis: WbcAppPool
