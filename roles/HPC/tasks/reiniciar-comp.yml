@@ -1,0 +1,91 @@
+
+
+---
+# tasks file for HPC
+
+- block:
+   - name: Validar las Components Services (COM+) de HPC
+     win_shell: |      
+       $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
+       $apps = $comAdmin.GetCollection("Applications")
+       $apps.Populate();
+       $apps_wbc = $apps | Where-Object {($_.Name -eq "COM+ QC Dead Letter Queue Listener")}
+       $apps_wbc
+     register: comp_hpc
+
+
+   - name: Listar las COM+ de HPC
+     debug: 
+       var: comp_hpc.stdout_lines
+
+  when: resp.msg is defined 
+  
+
+- block:
+   - name: Detener Components Service (COM+) de HPC
+     win_shell: |
+       $hpc1 = "COM+ QC Dead Letter Queue Listener"
+ 
+       $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
+       $apps = $comAdmin.GetCollection("Applications")
+       $apps.Populate();
+
+       $comAdmin.ShutdownApplication($hpc1)
+
+     register: stop_com
+    
+   - name: Imprimir Mensaje correcto
+     debug:
+        msg: 
+          - " ¡¡ CORRECTO !! "
+          - "Se detuvieron correctamente los COM+ de HPC ..."
+
+  rescue:
+   - name: Mensaje de error al detener los COM+ de HPC
+     fail:
+        msg: |
+         {% if stop_com.stderr.find("No se \r\nencuentra uno de los objetos especificados") != -1 %}  
+          - " ***********   ERROR AL DETENER LOS COM+   *************" 
+          - " Error al reconocer los COM+ de HPC. No se encuentran los COM+ especificados."
+          - " Para el correcto funcionamiento :"
+          - " Los COM+ de HPC deben existir y tener los siguientes nombres :'hpcData', 'hpcEntity' y 'hpcLogic'."
+          - " Cada COM+ de HPC , mencionado lineas atras, debe encontrarse activo o en estado RUNNING para el correcto reinicio."
+          - " Favor de validar que las COM+ de HPC  cumplan lo indicado y volver a ejecutar el playbook. "
+         {% endif %}
+         
+         {% if stop_com.stderr.find("El proceso \r\ndel servidor no se pudo iniciar debido a que la identidad configurada no es \r\ncorrecta") != -1 %}
+          - "************   ERROR AL DETENER LOS COM+   ************ "
+          - "Favor de validar que el usuario {{ ansible_user }} se encuentre conectado,logueado o en sesion en el servidor ."
+          - "Luego ejecutar nuevamente el playbook."
+         {% endif %}
+          
+- block:
+   - name: Iniciar Components Services (COM+) de HPC
+     win_shell: |
+       $hpc1 = "COM+ QC Dead Letter Queue Listener"
+    
+       $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
+       $apps = $comAdmin.GetCollection("Applications")
+       $apps.Populate();
+
+       $comAdmin.StartApplication($hpc1)
+  
+     register: start_com
+
+   - name: Imprimir Mensaje correcto
+     debug:
+        msg: 
+          - " ¡¡ CORRECTO !! "
+          - "Se reiniciaron correctamente los COM+ de HPC ..."
+
+  rescue:
+   - name: Mensaje de error al iniciar los COM+ de HPC  
+     fail:
+        msg: |
+         {% if start_com.stderr.find("El proceso \r\ndel servidor no se pudo iniciar debido a que la identidad configurada no es \r\ncorrecta") != -1 %}
+          - "************   ERROR AL INICIAR LOS COM+   ************ "
+          - "Favor de validar que el usuario {{ ansible_user }} se encuentre conectado,logueado o en sesion en el servidor ."
+          - "Luego ejecutar nuevamente el playbook."
+         {% endif %} 
+
+

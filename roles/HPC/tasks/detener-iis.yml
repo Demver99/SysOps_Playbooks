@@ -1,0 +1,23 @@
+
+---
+# tasks file for HPC
+- block:
+    - name: Detener IIS HPC      
+      win_iis_webapppool:
+        name: "{{ hpc_iis }}"
+        state: stopped
+      register: stop_result
+
+    - name: Imprimir mensaje correcto
+      debug:
+        msg: 
+         - " ¡¡ CORRECTO !! " 
+         - " Se detuvo correctamente el {{ hpc_iis }} de HPC .. ....."
+  
+  rescue:     
+    - name: Imprimir Error
+      debug: 
+        msg:
+         - " --------- ERROR ------- "
+         - "No se detuvo correctamente el {{ hpc_iis }} de HPC."
+         - "Mensaje de error: {{ stop_result.msg }}"

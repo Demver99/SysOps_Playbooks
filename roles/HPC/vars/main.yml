@@ -1,0 +1,11 @@
+---
+# vars file for HPC
+
+# Componentes HPC
+#hpc_comp: ["hpcData","hpcEntity","hpcLogic"]
+
+# IIS HPC
+#hpc_iis: hpcAppPool
+
+hpc_comp: COM+ QC Dead Letter Queue Listener
+hpc_iis: WbcAppPool

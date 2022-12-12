@@ -1,0 +1,24 @@
+
+---
+# tasks file for HPC
+- block:
+    - name: Iniciar IIS HPC      
+      win_iis_webapppool:
+        name: "{{ hpc_iis }}"
+        state: started
+      register: start_result
+
+    - name: Imprimir mensaje correcto
+      debug:
+        msg: 
+         - " ¡¡ CORRECTO  !! " 
+         - " Se inicio correctamente el {{ hpc_iis }} de HPC .. ....."
+         - " Se culmino con el WorkAround de manera correcta, favor mandar a validar... !! "
+  
+  rescue:     
+    - name: Imprimir Error
+      debug: 
+        msg:
+         - " --------- ERROR ------- "
+         - "No se inicio  correctamente el {{ hpc_iis }} de HPC."
+         - "Mensaje de error: {{ stop_result.msg }}"
