@@ -1,0 +1,98 @@
+---
+# tasks file for WHP
+- block:
+   - name: Validar las Components Services (COM+) de WHP
+     win_shell: |      
+       $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
+       $apps = $comAdmin.GetCollection("Applications")
+       $apps.Populate();
+       $apps_whp = $apps | Where-Object {($_.Name -eq "whpData") -or ($_.Name -eq "whpLogic") -or ($_.Name -eq "whpLogicADQ") -or ($_.Name -eq "whpLogicWHPADQ")}
+       $apps_whp
+     register: comp_whp
+
+
+   - name: Listar las COM+ de WHP
+     debug: 
+       var: comp_whp.stdout_lines
+
+  when: resp.msg is defined 
+  
+
+- block:
+   - name: Detener Components Service (COM+) de WHP
+     win_shell: |
+       $whp1 = "whpData"
+       $whp2 = "whpLogic"
+       $whp3 = "whpLogicADQ"
+       $whp4 = "whpLogicWHPADQ"
+ 
+       $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
+       $apps = $comAdmin.GetCollection("Applications")
+       $apps.Populate();
+
+       $comAdmin.ShutdownApplication($whp1)
+       $comAdmin.ShutdownApplication($whp2)
+       $comAdmin.ShutdownApplication($whp3)
+       $comAdmin.ShutdownApplication($whp4)
+
+     register: stop_com
+    
+   - name: Imprimir Mensaje correcto
+     debug:
+        msg: 
+          - " ¡¡ CORRECTO !! "
+          - "Se detuvieron correctamente los COM+ de WHP ..."
+
+  rescue:
+   - name: Mensaje de error al detener los COM+ de WHP
+     fail:
+        msg: |
+         {% if stop_com.stderr.find("No se \r\nencuentra uno de los objetos especificados") != -1 %}  
+          - " ***********   ERROR AL DETENER LOS COM+   *************" 
+          - " Error al reconocer los COM+ de WHP. No se encuentran los COM+ especificados."
+          - " Para el correcto funcionamiento :"
+          - " Los COM+ de WHP deben existir y tener los siguientes nombres :'whpData', 'whpLogic' , 'whpLogicADQ' y 'whpLogicWHPADQ'."
+          - " Cada COM+ de WHP , mencionado lineas atras, debe encontrarse activo o en estado RUNNING para el correcto reinicio."
+          - " Favor de validar que las COM+ de WHP cumplan lo indicado y volver a ejecutar el playbook. "
+         {% endif %}
+         
+         {% if stop_com.stderr.find("El proceso \r\ndel servidor no se pudo iniciar debido a que la identidad configurada no es \r\ncorrecta") != -1 %}
+          - "************   ERROR AL DETENER LOS COM+   ************ "
+          - "Favor de validar que el usuario {{ ansible_user }} se encuentre conectado,logueado o en sesion en el servidor ."
+          - "Luego ejecutar nuevamente el playbook."
+         {% endif %}
+          
+- block:
+   - name: Iniciar Components Services (COM+) de WHP
+     win_shell: |
+       $whp1 = "whpData"
+       $whp2 = "whpLogic"
+       $whp3 = "whpLogicADQ"
+       $whp4 = "whpLogicWHPADQ"
+    
+       $comAdmin = New-Object -comobject COMAdmin.COMAdminCatalog
+       $apps = $comAdmin.GetCollection("Applications")
+       $apps.Populate();
+
+       $comAdmin.StartApplication($whp1)
+       $comAdmin.StartApplication($whp2)
+       $comAdmin.StartApplication($whp3)
+       $comAdmin.StartApplication($whp4)
+ 
+     register: start_com
+
+   - name: Imprimir Mensaje correcto
+     debug:
+        msg: 
+          - " ¡¡ CORRECTO !! "
+          - "Se reiniciaron correctamente los COM+ de WHP ..."
+
+  rescue:
+   - name: Mensaje de error al iniciar los COM+ de WHP  
+     fail:
+        msg: |
+         {% if start_com.stderr.find("El proceso \r\ndel servidor no se pudo iniciar debido a que la identidad configurada no es \r\ncorrecta") != -1 %}
+          - "************   ERROR AL INICIAR LOS COM+   ************ "
+          - "Favor de validar que el usuario {{ ansible_user }} se encuentre conectado,logueado o en sesion en el servidor ."
+          - "Luego ejecutar nuevamente el playbook."
+         {% endif %} 

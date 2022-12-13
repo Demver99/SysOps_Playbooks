@@ -1,0 +1,6 @@
+---
+# tasks file for WHP
+
+- include_tasks: detener-iis.yml
+- include_tasks: reiniciar-comp.yml
+- include_tasks: iniciar-iis.yml

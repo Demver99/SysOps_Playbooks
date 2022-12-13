@@ -1,0 +1,25 @@
+---
+# tasks file for WHP
+
+- block:
+    - name: Detener IIS WHP      
+      win_iis_webapppool:
+        name: "{{ item }}"
+        state: stopped
+      loop: "{{ whp_iis }}"
+      register: stop_result
+
+    - name: Imprimir mensaje correcto
+      debug:
+        msg: 
+         - " ¡¡ CORRECTO !! " 
+         - " Se detuvo correctamente los aplication pools IIS de WHP ..... !!"
+      register: resp
+  
+  rescue:     
+    - name: Imprimir Error
+      debug: 
+        msg:
+         - " -------- ERROR -------- "
+         - "No se detuvo correctamente las applications pool de WHP."
+         - "Mensaje de error: {{ stop_result.msg }"

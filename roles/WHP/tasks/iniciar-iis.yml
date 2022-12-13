@@ -1,0 +1,24 @@
+---
+# tasks file for WHP
+- block:
+    - name: Iniciar los IIS WHP
+      win_iis_webapppool:
+        name: "{{ item }}"
+        state: started
+      loop: "{{ whp_iis }}"
+      register: start_result
+
+    - name: Imprimir mensaje correcto
+      debug:
+        msg: 
+         - " ¡¡ CORRECTO !! "
+         - " Se iniciaron  correctamente los applications pools IIS de WHP ... !! "
+         - " Se culmino con el W.A de manera correcta , favor de mandar a validar...!!" 
+
+  rescue:
+    - name: Imprimir mensaje de Error 
+      debug:
+        msg: 
+         - " --------- ERROR --------- "
+         - "Se intento iniciar los applications pools IIS de WHP sin exito."
+         - "Mensaje de error : {{ start_result.msg }}"

@@ -1,0 +1,4 @@
+---
+# vars file for WHP
+
+whp_iis: ["whpIntranetAppPool","whpUltimusAppPool","whpExtranetAppPool","whpwsIntranetAppPool","whpwsExtranetAppPool"]
